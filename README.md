@@ -1,4 +1,4 @@
-# dhlab-vesuvius-ink-masking
+# Vesuvius Challenge: ink detection
 
 ## Basic Information
 * **Author:** Romain Frossard
