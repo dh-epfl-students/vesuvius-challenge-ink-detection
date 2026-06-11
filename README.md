@@ -1,12 +1,12 @@
-# Vesuvius Challenge: ink detection
+# Vesuvius Challenge: Ink Detection & Masking
 
 ## Basic Information
 * **Author:** Romain Frossard
-* **Supervisor:** Prof. Frédéric Kaplan (Digital Humanities Laboratory - DHLAB)
+* **Supervisor:** Prof. [Name] (Digital Humanities Laboratory - DHLAB)
 * **Academic Year:** 2025-2026 (Spring Semester)
 
 ## About
-This project was developed at the École Polytechnique Fédérale de Lausanne (EPFL) as part of a semester project. It provides a highly robust computer vision pipeline and a resulting dataset of over 800 binary ink masks derived from historical papyrus fragments (sourced from the Duke University and Oslo Archives). Initially designed to overcome the 2D masking bottleneck for 3D synthetic data generation in the **Vesuvius Challenge**, this tool isolates true carbon ink from degraded plant fibers to provide pixel-perfect ground truth.
+This project was developed at the École Polytechnique Fédérale de Lausanne (EPFL) as part of a master's semester project. It provides a highly robust computer vision pipeline and a resulting dataset of over 800 binary ink masks derived from historical papyrus fragments (sourced from the Duke University and Oslo Archives). Initially designed to overcome the 2D masking bottleneck for 3D synthetic data generation in the **Vesuvius Challenge**, this tool isolates true carbon ink from degraded plant fibers to provide pixel-perfect ground truth.
 
 ## Research Summary
 The extraction of clean 2D inputs from heavily degraded historical manuscripts is a formidable computer vision challenge. Deterministic mathematical filters (like Sauvola thresholding) often fail due to severe illumination variances and structural noise. 
@@ -20,32 +20,92 @@ Evaluated on a Leave-One-Out Cross-Validation (LOOCV) protocol, the model achiev
 
 ![Qualitative Results](images/figure_1.png)
 
-## Installation and Usage
+## Repository Structure
 
-### Dependencies
-This project requires Python 3.10+ and the packages listed in `requirements.txt`.
-To install the dependencies, create a virtual environment and run:
+```text
+vesuvius-ink-detection/
+├── README.md
+├── LICENSE
+├── requirements.txt
+├── data/                       # Empty by default (store datasets on local NVMe/scratch)
+├── images/                     # Contains figures for this README
+├── lib/                        # Core Pipeline Scripts (CLI Executables)
+│   ├── dataset_builder.py      # CLAHE preprocessing and HDF5 feature extraction
+│   ├── inference.py            # Sliding window inference & hybrid post-processing
+│   ├── metadata_merger.py      # Harmonizes Duke/Oslo datasets & scrapes web archives
+│   └── train.py                # Dual-strategy training engine (Async/Preload)
+└── notebooks/                  # Interactive Visualizations & Data Provenance
+    ├── 00_Data_Collection_and_Scraping.ipynb
+    └── 01_Inference_Demo.ipynb
+```
 
+## Installation
+This project requires Python 3.10+ and a CUDA-enabled GPU for efficient feature extraction and training.
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/vesuvius-ink-detection.git
+cd vesuvius-ink-detection
+```
+
+2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
+*Note: To ensure maximum performance with PyTorch 2.0+ compilation, please install the appropriate PyTorch version for your specific CUDA drivers via the [official PyTorch website](https://pytorch.org/get-started/locally/).*
 
-### Usage
-*(Adapt this section depending on how you structured your scripts in `/lib`)*
+## Usage (Command Line Interface)
 
-To run the inference pipeline on a new high-resolution papyrus scan:
+The core functionalities are encapsulated in the `lib/` directory and can be executed directly from the terminal. This is specifically designed for deployment on high-performance computing clusters (e.g., EPFL IC Cluster).
 
+### 1. Standardizing the Dataset
+To unify the Duke and Oslo raw datasets, generate sequential surrogate IDs, and fetch missing metadata:
 ```bash
-python lib/inference.py --input data/raw_scan.tif --output results/mask.png
+python lib/metadata_merger.py \
+    --duke_csv data/raw/duke_meta.csv \
+    --duke_img data/raw/duke_images \
+    --oslo_meta data/raw/oslo_meta \
+    --oslo_img data/raw/oslo_images \
+    --out_dir data/Unified_Dataset
 ```
 
-For exploratory data analysis and qualitative visualizations, refer to the Jupyter notebooks in the `notebooks/` directory.
+### 2. Building the HDF5 Embedding Database
+To extract macroscopic patches, apply CLAHE, and generate the NVlabs/RADIO feature embeddings:
+```bash
+python lib/dataset_builder.py \
+    --img_dir data/Unified_Dataset/images \
+    --mask_dir data/Unified_Dataset/masks \
+    --hdf5_out data/training_features.h5
+```
+
+### 3. Model Training
+The training script supports two memory-management strategies: `preload` (for lighter 512x512 datasets) and `async` (for massive 256x256 datasets requiring chunked NVMe streaming).
+```bash
+python lib/train.py \
+    --hdf5_path data/training_features.h5 \
+    --weights_dir weights/ \
+    --strategy async \
+    --batch_size 262144
+```
+
+### 4. Full Resolution Inference
+To generate clean binary masks and quality-control overlays from new, unseen papyrus scans:
+```bash
+python lib/inference.py \
+    --img_dir data/test_scans \
+    --weights weights/radio_production_model.pth \
+    --out_dir results/
+```
+
+## Exploratory Notebooks
+For interactive demonstrations, exploratory data analysis, and visual debugging, please refer to the `notebooks/` directory. `01_Inference_Demo.ipynb` provides a step-by-step visual breakdown of the sliding window and hybrid post-processing methodology.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 dhlab-vesuvius-ink-masking - Romain Frossard  
 Copyright (c) 2026 EPFL  
 This program is licensed under the terms of the MIT License.
+```

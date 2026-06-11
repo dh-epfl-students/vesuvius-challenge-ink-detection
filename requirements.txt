@@ -1,0 +1,23 @@
+# ==========================================
+# Vesuvius Ink Detection - Dependencies
+# ==========================================
+
+# --- Core Deep Learning ---
+# PyTorch 2.0+ est requis pour utiliser torch.compile()
+torch>=2.0.0
+torchvision
+
+# --- Data Processing & Computer Vision ---
+numpy
+opencv-python
+Pillow
+h5py
+
+# --- Web Scraping & Metadata ---
+requests
+beautifulsoup4
+
+# --- Visualization & Utilities ---
+matplotlib
+tqdm
+scikit-learn
