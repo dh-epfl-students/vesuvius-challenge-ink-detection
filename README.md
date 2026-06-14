@@ -2,7 +2,7 @@
 
 ## Basic Information
 * **Author:** Romain Frossard
-* **Supervisor:** Prof. [Name] (Digital Humanities Laboratory - DHLAB)
+* **Supervisor:** Prof. Frédéric Kaplan (Digital Humanities Laboratory - DHLAB)
 * **Academic Year:** 2025-2026 (Spring Semester)
 
 ## About
@@ -20,6 +20,14 @@ Evaluated on a Leave-One-Out Cross-Validation (LOOCV) protocol, the model achiev
 
 ![Qualitative Results](images/figure_1.png)
 
+## Post-Report Updates: The Digital Microscope (256px)
+
+While the attached semester report (`report/report.pdf`) outlines the baseline theoretical methodology and validation (LOOCV focused on 512px patches for maximum global context), the final production pipeline has been structurally optimized for deployment:
+
+- **The Resolution Dilemma:** We identified a trade-off between semantic context (512px) and local precision (256px). 
+- **Production Inference:** The final production model (`Ink_masking_model_256.pth`) operates strictly on **256px patches** with a 50% spatial overlap during inference. Because the ViT token grid is fixed, shrinking the physical patch size acts as a **digital microscope**, doubling the local prediction density. This prevents character merging (the "baveux" effect) and ensures the razor-sharp isolation of the calligraphy's microscopic *ductus*.
+- **Data Scale:** The final weights provided in this repository were trained on the entire expanded corpus to maximize feature richness, moving beyond the initial LOOCV control subset.
+
 ## Repository Structure
 
 ```text
@@ -34,9 +42,14 @@ vesuvius-ink-detection/
 │   ├── inference.py            # Sliding window inference & hybrid post-processing
 │   ├── metadata_merger.py      # Harmonizes Duke/Oslo datasets & scrapes web archives
 │   └── train.py                # Dual-strategy training engine (Async/Preload)
-└── notebooks/                  # Interactive Visualizations & Data Provenance
-    ├── 00_Data_Collection_and_Scraping.ipynb
-    └── 01_Inference_Demo.ipynb
+├── notebooks/                  # Interactive Visualizations & Data Provenance
+│   ├── 00_Data_Collection_and_Scraping.ipynb
+│   └── 01_Inference_Demo.ipynb
+├── report/                     # Official semester project milestone document
+│   └── report.pdf
+└── weights/                    # Pre-trained pipeline weights
+    ├── Ink_masking_model_256.pth   # High-precision production model (Microscope approach)
+    └── Ink_masking_model_512.pth   # High-context validation model (Baseline)
 ```
 
 ## Installation
@@ -56,7 +69,7 @@ pip install -r requirements.txt
 
 ## Usage (Command Line Interface)
 
-The core functionalities are encapsulated in the `lib/` directory and can be executed directly from the terminal. This is specifically designed for deployment on high-performance computing clusters (e.g., EPFL IC Cluster).
+The core functionalities are encapsulated in the `lib/` directory and can be executed directly from the terminal.
 
 ### 1. Standardizing the Dataset
 To unify the Duke and Oslo raw datasets, generate sequential surrogate IDs, and fetch missing metadata:
@@ -79,7 +92,7 @@ python lib/dataset_builder.py \
 ```
 
 ### 3. Model Training
-The training script supports two memory-management strategies: `preload` (for lighter 512x512 datasets) and `async` (for massive 256x256 datasets requiring chunked NVMe streaming).
+The training script supports two memory-management strategies: `preload` (for lighter datasets) and `async` (for massive datasets requiring chunked NVMe streaming).
 ```bash
 python lib/train.py \
     --hdf5_path data/training_features.h5 \
@@ -89,16 +102,26 @@ python lib/train.py \
 ```
 
 ### 4. Full Resolution Inference
-To generate clean binary masks and quality-control overlays from new, unseen papyrus scans:
+To generate clean binary masks and quality-control overlays from new, unseen papyrus scans using the high-precision 256px model:
 ```bash
 python lib/inference.py \
     --img_dir data/test_scans \
-    --weights weights/radio_production_model.pth \
+    --weights weights/Ink_masking_model_256.pth \
     --out_dir results/
 ```
 
 ## Exploratory Notebooks
 For interactive demonstrations, exploratory data analysis, and visual debugging, please refer to the `notebooks/` directory. `01_Inference_Demo.ipynb` provides a step-by-step visual breakdown of the sliding window and hybrid post-processing methodology.
+
+
+## Acknowledgments & Data Provenance
+The historical papyrus images utilized for the visual demonstrations and exploratory notebooks in this repository are sourced from the Duke University Libraries Digital Collections. We gratefully acknowledge their contribution to open research:
+
+* **Demo Image (055.tif):** Papyrus P.Duk.inv. 196, David M. Rubenstein Rare Book & Manuscript Library, Duke University.
+* **Panel Demonstration (figure_1.png):** Papyrus P.Duk.inv. 765, David M. Rubenstein Rare Book & Manuscript Library, Duke University.
+
+## Generative AI Acknowledgement
+The author acknowledges the use of Large Language Models (LLMs) during this project. AI tools were utilized as developmental assistants for tasks such as drafting code and utility scripts, refactoring, and formatting documentation (including this README). The core mathematical architecture, dataset curation, training pipeline logic, and scientific analysis remain the original, independent work of the author.
 
 ## License
 
@@ -108,4 +131,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 dhlab-vesuvius-ink-masking - Romain Frossard  
 Copyright (c) 2026 EPFL  
 This program is licensed under the terms of the MIT License.
-```
