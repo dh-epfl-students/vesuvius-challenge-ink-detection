@@ -27,6 +27,7 @@ While the attached semester report (`report/report.pdf`) outlines the baseline t
 - **Data Scale:** The final weights provided in this repository were trained on the entire expanded corpus to maximize feature richness, moving beyond the initial LOOCV control subset.
 
 ## Repository Structure
+```
 vesuvius-ink-detection/
 ├── README.md
 ├── LICENSE
@@ -47,7 +48,7 @@ vesuvius-ink-detection/
 └── weights/                    # Pre-trained pipeline weights
     ├── Ink_masking_model_256.pth   # High-precision production model (Microscope approach)
     └── Ink_masking_model_512.pth   # High-context validation model (Baseline)
-
+```
 ## Installation
 This project requires Python 3.10+ and a CUDA-enabled GPU for efficient feature extraction and training.
 
