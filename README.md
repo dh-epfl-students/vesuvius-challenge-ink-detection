@@ -23,7 +23,6 @@ To solve this, our pipeline leverages a deep learning framework:
 
 While the attached semester report (`report/report.pdf`) outlines the baseline theoretical methodology and validation (LOOCV focused on 512px patches for global context), the final production pipeline has been structurally optimized for deployment:
 
-- **The Resolution Dilemma:** We identified a trade-off between semantic context (512px) and local precision (256px). 
 - **Production Inference:** The final production model (`Ink_masking_model_256.pth`) operates strictly on **256px patches** with a 50% spatial overlap during inference. Because the ViT token grid is fixed, shrinking the physical patch size acts as a **digital microscope**, doubling the local prediction density. This prevents character merging (the "baveux" effect) and ensures the razor-sharp isolation of the calligraphy's microscopic *ductus*.
 - **Data Scale:** The final weights provided in this repository were trained on the entire expanded corpus to maximize feature richness, moving beyond the initial LOOCV control subset.
 
