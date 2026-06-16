@@ -129,9 +129,9 @@ The author acknowledges the use of Large Language Models (LLMs) during this proj
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPLv3)** - see the [LICENSE](LICENSE) file for details.
 
 ---
 dhlab-vesuvius-ink-masking - Romain Frossard  
-Copyright (c) 2026 EPFL  
-This program is licensed under the terms of the MIT License.
+Copyright (c) 2026 EPFL (DHLAB)  
+This program is licensed under the terms of the GNU Affero General Public License v3.0.
