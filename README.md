@@ -14,7 +14,7 @@ The extraction of clean 2D inputs from historical manuscripts is a formidable co
 To solve this, our pipeline leverages a deep learning framework:
 1. **Feature Extraction:** We utilize a frozen Vision Foundation Model (**NVlabs/RADIO v2.5-l**). By upscaling input patches, each spatial token maps to a highly localized 4x4 pixel area, preserving microscopic ink features.
 2. **Segmentation:** A custom Multi-Layer Perceptron (MLP) head processes the dense embeddings, trained with a specialized hybrid Dice-BCE loss function to heavily penalize the erasure of faint strokes.
-3. **Post-Processing:** A hybrid bounded hysteresis binarization algorithm translates continuous sub-pixel probabilities into crisp, structural masks, successfully rejecting physical edge artifacts and hallucinated background fibers.
+3. **Post-Processing:** A hybrid bounded hysteresis binarization algorithm translates continuous sub-pixel probabilities into crisp, structural masks.
 
 
 ![Qualitative Results](images/figure_1.png)
